@@ -1,0 +1,94 @@
+import math
+import matplotlib.pyplot as plt
+import numpy as np
+
+def get_spiral_coordinates(n):
+    """Calculate coordinates for a counterclockwise spiral starting left from 0"""
+    if n == 0:
+        return (0, 0)
+
+    k = math.floor((math.sqrt(n) + 1)/2)
+    ring_start = (2*k - 1)**2
+    offset = n - ring_start
+    side_length = 2*k
+
+    side = offset // side_length if side_length > 0 else 0
+    pos = offset % side_length
+
+    if side == 0:
+        return (-k, k - 1 - pos)
+    elif side == 1:
+        return (-k + 1 + pos, -k)
+    elif side == 2:
+        return (k, -k + 1 + pos)
+    else:
+        return (k - 1 - pos, k)
+
+def plot_interactive_spiral():
+    """Interactive spiral plotter with strict integer-axis scaling"""
+    # Get user input
+    while True:
+        try:
+            n_max = int(input("Enter the maximum number for the spiral (n_max ≥ 0): "))
+            if n_max < 0:
+                print("Please enter a non-negative integer.")
+                continue
+            break
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
+    # Generate coordinates
+    numbers = list(range(n_max + 1))
+    coords = [get_spiral_coordinates(n) for n in numbers]
+    x = [c[0] for c in coords]
+    y = [c[1] for c in coords]
+
+    # Calculate axis limits
+    max_coord = max(max(abs(xi) for xi in x), max(abs(yi) for yi in y))
+    axis_limit = math.ceil(max_coord) + 1  # Force integer expansion
+
+    # Create plot
+    plt.figure(figsize=(10, 10))
+    ax = plt.gca()
+
+    # Configure axes
+    ax.set_xlim(-axis_limit, axis_limit)
+    ax.set_ylim(-axis_limit, axis_limit)
+    ax.set_xticks(np.arange(-axis_limit, axis_limit + 1, 1))  # Integer ticks
+    ax.set_yticks(np.arange(-axis_limit, axis_limit + 1, 1))
+    ax.set_aspect('equal')
+    ax.grid(True, linestyle='--', alpha=0.3)
+    ax.axhline(0, color='black', linewidth=0.5)
+    ax.axvline(0, color='black', linewidth=0.5)
+
+    # Plot spiral
+    ax.plot(x, y, '-', color='skyblue', linewidth=1, alpha=0.4)
+    ax.scatter(x, y, s=50, facecolors='none', edgecolors='navy')
+
+    # Label points
+    for n, xi, yi in zip(numbers, x, y):
+        ax.text(xi, yi+0.3, str(n), ha='center', va='center',
+               fontsize=8, color='darkred')
+
+    plt.title(f"Counterclockwise Number Spiral (0 to {n_max})", pad=15)
+    plt.show()
+
+    # Interactive query
+    while True:
+        try:
+            user_input = input("Enter a number to find (q to show graph): ").strip().lower()
+            if user_input == 'q':
+                break
+
+            n = int(user_input)
+            if n < 0 or n > n_max:
+                print(f"Number must be between 0 and {n_max}")
+                continue
+
+            xn, yn = get_spiral_coordinates(n)
+            print(f"Number {n} coordinates: ({xn}, {yn})")
+
+        except ValueError:
+            print("Please enter a valid integer")
+
+plot_interactive_spiral()
